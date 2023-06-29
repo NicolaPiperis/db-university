@@ -25,7 +25,11 @@ Dopo aver testato le vostre query con `phpMyAdmin`, riportatele in un file `txt`
 
     SELECT * 
     FROM students 
-    WHERE year(date_of_birth) < 1994;
+    WHERE year(date_of_birth) < 1993;
+
+    SELECT * 
+    FROM students 
+    WHERE YEAR(NOW()) - YEAR(date_of_birth) > 30;
 
 
 5. Selezionare tutti i corsi del primo semestre del primo anno di un qualsiasi corso di laurea `(286)`
@@ -67,9 +71,9 @@ Dopo aver testato le vostre query con `phpMyAdmin`, riportatele in un file `txt`
 
 1. Contare quanti iscritti ci sono stati ogni anno
 
-    SELECT year(date_of_birth), COUNT(*) AS 'count' 
+    SELECT year(enrolment_day), COUNT(*) AS 'count' 
     FROM students 
-    GROUP BY year(date_of_birth);
+    GROUP BY year(enrolment_day);
 
 
 2. Contare gli insegnanti che hanno l'ufficio nello stesso edificio
@@ -92,3 +96,75 @@ Dopo aver testato le vostre query con `phpMyAdmin`, riportatele in un file `txt`
     FROM degrees 
     GROUP BY department_id;
 
+
+#### Join
+1. Selezionare tutti gli studenti iscritti al `Corso di Laurea in Economia`
+
+    SELECT * 
+    FROM `students` 
+    JOIN degrees 
+        ON degrees.id = students.degree_id 
+    WHERE degrees.name LIKE 'Corso di Laurea in Economia';
+
+2. Selezionare tutti i `Corsi di Laurea Magistrale del Dipartimento di
+Neuroscienze`
+
+    SELECT * 
+    FROM degrees 
+    JOIN departments 
+        ON departments.id LIKE degrees.department_id 
+    WHERE degrees.level LIKE 'magistrale' 
+        AND departments.name LIKE 'Dipartimento di Neuroscienze';
+
+3. Selezionare tutti i corsi in cui insegna `Fulvio Amato` (id=`44`)
+
+    SELECT * 
+    FROM courses 
+    JOIN course_teacher 
+        ON courses.id = course_teacher.course_id 
+    JOIN teachers 
+        ON teachers.id = course_teacher.teacher_id 
+    WHERE teachers.name LIKE 'Fulvio' 
+        AND teachers.surname LIKE 'Amato' 
+        AND teachers.id = 44;
+
+4. Selezionare tutti gli studenti con i dati relativi al corso di laurea a cui
+sono iscritti e il relativo dipartimento, in ordine alfabetico per cognome e
+nome
+
+    SELECT * 
+    FROM students 
+    JOIN degrees
+        ON degrees.id = students.degree_id 
+    JOIN departments 
+        ON degrees.department_id = departments.id 
+    ORDER BY students.surname, students.name;
+
+5. Selezionare tutti i corsi di laurea con i relativi corsi e insegnanti
+
+    SELECT degrees.*, students.*, courses.* 
+    FROM `degrees` 
+    JOIN students 
+        ON degrees.id = students.degree_id 
+    JOIN courses 
+        ON degrees.id = courses.degree_id;
+
+6. Selezionare tutti i docenti che insegnano nel `Dipartimento di
+Matematica` (54)
+
+    SELECT * 
+    FROM `teachers`
+    JOIN course_teacher
+        ON teachers.id = course_teacher.teacher_id
+    JOIN courses
+        ON courses.id = course_teacher.course_id
+    JOIN degrees 
+        ON degrees.id = courses.degree_id
+    JOIN departments
+        ON degrees.department_id = departments.id
+    WHERE departments.name LIKE 'Dipartimento di Matematica';
+
+##### Bonus
+7. Selezionare per ogni studente il numero di tentativi sostenuti
+per ogni esame, stampando anche il voto massimo. Successivamente,
+filtrare i tentativi con voto minimo 18.
